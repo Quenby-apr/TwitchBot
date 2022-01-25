@@ -22,6 +22,7 @@ namespace TwitchBot
         private static DinoWorld dinoWorld;
         private TcpClient client;
         private StreamReader reader;
+        public List<string> commands;
         private StreamWriter writer { get; }
         private TextBox textBox;
         private string passToken;
@@ -50,7 +51,7 @@ namespace TwitchBot
                     if (numbers.Count == 1)
                     {
                         
-                        value = rnd.Next(0, int.Parse(numbers[0]));
+                        value = rnd.Next(0, int.Parse(numbers[0])+1);
                     }
                     else if (numbers.Count == 2)
                     {
@@ -60,11 +61,11 @@ namespace TwitchBot
                             numbers[1]=numbers[0];
                             numbers[0]=buf;
                         }
-                        value = rnd.Next(int.Parse(numbers[0]), int.Parse(numbers[1]));
+                        value = rnd.Next(int.Parse(numbers[0]), int.Parse(numbers[1])+1);
                     }
                     else
                     {
-                        value = rnd.Next(0, 100);
+                        value = rnd.Next(0, 101);
                     }
 
                     client.SendMessage(userName+ ", твой результат: "+value.ToString());
@@ -115,11 +116,11 @@ namespace TwitchBot
         {
             emotions = new Emotion();
             dinoWorld = new DinoWorld();
+            commands = new List<string>();
             textBox = outputTextBox;
             client = new TcpClient(TwitchInit.Host, TwitchInit.Port);
             reader = new StreamReader(client.GetStream());
             writer = new StreamWriter(client.GetStream());
-            writer.AutoFlush = true;
             this.botName = botName;
             this.channelName = channelName;
             passToken = token;
@@ -176,37 +177,25 @@ namespace TwitchBot
 
         public void SendMessage(string message)
         {
-            Command command = new Command(client, "PRIVMSG", string.Format("#{0} :{1}", channelName, message.ToString()));
-            Thread mythread = new Thread(new ThreadStart(command.SendCommand));
-            mythread.Start();
-            //SendCommand("PRIVMSG", string.Format("#{0} :{1}", channelName, message.ToString()));
+            Console.WriteLine(message);
+            commands.Add("PRIVMSG "+ string.Format("#{0} :{1}", channelName, message.ToString()));
+            SendCommands();
         }
-
+        public void SendCommands()
+        {
+            for (int i = commands.Count-1; i>=0;i--)
+            {
+                writer.WriteLine(commands[i]);
+                commands.RemoveAt(i);
+                writer.Flush();
+                Thread.Sleep(1000);
+            }
+            
+        }
         public void SendCommand(string cmd, string param)
         {
             writer.WriteLine(cmd + " " + param);
-        }
-
-        public class Command
-        {
-            public string cmd;
-            public string param;
-            private TcpClient client;
-            private StreamWriter writer;
-
-
-            public Command(TcpClient client, string cmd, string param)
-            {
-                this.cmd = cmd;
-                this.param = param;
-                this.client = client;
-
-            }
-
-            public void SendCommand()
-            {
-                writer.WriteLine(cmd + " " + param);
-            }
+            writer.Flush();
         }
     }
 }
