@@ -183,7 +183,7 @@ namespace TwitchBot
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
                     var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
-                    client.SendMessage(dino.HP.ToString());
+                    client.SendMessage(userName+ ", у вашего динозавра сейчас "+dino.HP.ToString()+" здоровья");
                 }
             },
         };

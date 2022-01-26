@@ -23,12 +23,13 @@ namespace TwitchBot
         public int Wins { get; set; }
         public bool Busy { get; set; }
 
-        public Dinozavr(string name)
+        public Dinozavr(string userName, string name)
         {
             XP = 1;
             Level = 0;
             HP = 10;
             Wins = 0;
+            this.userName = userName;
             Name = name;
             Busy = false;
             emotion = new Emotion();
@@ -78,10 +79,9 @@ namespace TwitchBot
     {
         public int MaxHP = 300;
         public int Fruits { get; private set; }
-        public Herbivore(string name):base(name)
+        public Herbivore(string userName, string name) :base(userName,name)
         {
             Fruits = 0;
-            Name = name;
         }
 
         public override string dinner()
@@ -124,7 +124,7 @@ namespace TwitchBot
             }
             if (Busy)
             {
-                return Name + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
+                return userName + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
             }
             return "что-то пошло не так";
         }
@@ -139,9 +139,9 @@ namespace TwitchBot
     {
         public int MaxHP = 15;
         public int Preys { get; private set; }
-        public Predator(string name) : base(name)
+        public Predator(string userName, string name) : base(userName, name)
         {
-            Name = name;
+            Preys = 0;
         }
 
         public override string dinner(List<Dinozavr> dinozavrs)
@@ -204,7 +204,7 @@ namespace TwitchBot
             }
             if (Busy)
             {
-                return Name + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
+                return userName + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
             }
             return "что-то пошло не так";
         }

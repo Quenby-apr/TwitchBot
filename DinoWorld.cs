@@ -27,11 +27,11 @@ namespace TwitchBot
                 int value = rand.Next(0, 4);
                 if (value<3)
                 {
-                    dinozavrs.Add(new Herbivore(dinoName));
+                    dinozavrs.Add(new Herbivore(userName,dinoName));
                     return userName + ", Ваш первый динозавр создан, и он травоядный! " + emotion.emotions["joy"]; // дино впервые от человека добавлен
                 } else if (value == 4)
                 {
-                    dinozavrs.Add(new Predator(dinoName));
+                    dinozavrs.Add(new Predator(userName, dinoName));
                     return userName + ", Ваш первый динозавр создан, и он хищный! " + emotion.emotions["predator"]; 
                 }
             }
@@ -48,12 +48,12 @@ namespace TwitchBot
                     int value = rand.Next(0, 4);
                     if (value < 3)
                     {
-                        dinozavrs.Add(new Herbivore(dinoName));
+                        dinozavrs.Add(new Herbivore(userName, dinoName));
                         return userName + ", Новый динозавр добавлен, и он травоядный " + emotion.emotions["joy"]; //дино добавлен   
                     }
                     else if (value == 4)
                     {
-                        dinozavrs.Add(new Predator(dinoName));
+                        dinozavrs.Add(new Predator(userName, dinoName));
                         return userName + ", Новый динозавр добавлен, и он хищный! " + emotion.emotions["predator"];
                     } 
                 }
