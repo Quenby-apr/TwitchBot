@@ -118,7 +118,7 @@ namespace TwitchBot
                     {
                         if (!dino.Busy)
                         {
-                            client.SendMessage(userName+", ваш динозавр уже на охоте");
+                            client.SendMessage(userName+", ваш динозавр ушёл на охоту");
                         }
                         answer = dino.dinner(dinoWorld.dinozavrs);
                     }

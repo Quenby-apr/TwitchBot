@@ -23,8 +23,17 @@ namespace TwitchBot
             if (!dinosDict.ContainsKey(userName))
             {
                 dinosDict.Add(userName, 1);
-                dinozavrs.Add(new Herbivore(dinoName));
-                return userName+", Ваш первый динозавр создан! " + emotion.emotions["joy"]; // дино впервые от человека добавлен
+                Random rand = new Random();
+                int value = rand.Next(0, 4);
+                if (value<3)
+                {
+                    dinozavrs.Add(new Herbivore(dinoName));
+                    return userName + ", Ваш первый динозавр создан, и он травоядный! " + emotion.emotions["joy"]; // дино впервые от человека добавлен
+                } else if (value == 4)
+                {
+                    dinozavrs.Add(new Predator(dinoName));
+                    return userName + ", Ваш первый динозавр создан, и он хищный! " + emotion.emotions["predator"]; 
+                }
             }
             if (dinosDict.ContainsKey(userName))
             {
@@ -35,8 +44,18 @@ namespace TwitchBot
                     {
                         return userName + ", К сожалению у вас уже есть динозавр " + emotion.emotions["sadness"]; //такое имя уже существует
                     }
-                    dinozavrs.Add(new Herbivore(dinoName));
-                    return userName + ", Новый динозавр добавлен"; //дино добавлен
+                    Random rand = new Random();
+                    int value = rand.Next(0, 4);
+                    if (value < 3)
+                    {
+                        dinozavrs.Add(new Herbivore(dinoName));
+                        return userName + ", Новый динозавр добавлен, и он травоядный " + emotion.emotions["joy"]; //дино добавлен   
+                    }
+                    else if (value == 4)
+                    {
+                        dinozavrs.Add(new Predator(dinoName));
+                        return userName + ", Новый динозавр добавлен, и он хищный! " + emotion.emotions["predator"];
+                    } 
                 }
                 else
                 {
