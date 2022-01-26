@@ -186,6 +186,14 @@ namespace TwitchBot
                     client.SendMessage(userName+ ", у вашего динозавра сейчас "+dino.HP.ToString()+" здоровья");
                 }
             },
+            { "!dino bye",
+                delegate(string msg, TwitchIRCClient client)
+                {
+                    string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    client.SendMessage(dinoWorld.killDino(userName, userName));
+                }
+            },
         };
         public TwitchIRCClient(TextBox outputTextBox, string channelName, string botName, string token)
         {

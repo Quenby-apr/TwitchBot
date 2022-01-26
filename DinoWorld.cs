@@ -65,11 +65,20 @@ namespace TwitchBot
             return "Ошибка";
         }
 
-        public string killDino(string dinoName)
+        public string killDino(string userName, string dinoName)
         {
-            var dinoToDelete = dinozavrs.Where(x => x.Name == dinoName).Select(x => x).First();
-            dinozavrs.Remove(dinoToDelete);
-            return "Динозавра " + dinoName + "больше нет с нами";
+            if (dinosDict[userName]!=0)
+            {
+                dinosDict[userName] = dinosDict[userName]--;
+                var dinoToDelete = dinozavrs.Where(x => x.Name == dinoName && x.userName == userName).FirstOrDefault();
+                dinoToDelete.Alive = false;
+                dinozavrs.Remove(dinoToDelete);
+                return "Динозавра " + dinoName + "больше нет с нами";
+            }
+            else
+            {
+                return userName+", у вас и так нет ни единого динозавра" + emotion.emotions["sadness"];
+            } 
         }
     }
 }
