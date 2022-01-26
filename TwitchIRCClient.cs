@@ -34,9 +34,8 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     int value;
-                    int indexOfSubstring = msg.IndexOf("!") ;
-                    string userName=msg.Substring(1, indexOfSubstring-1);
-                    indexOfSubstring = msg.IndexOf("#"+client.channelName) +client.channelName.Length+2 ;
+                    string userName=client.getUserName(msg);
+                    int indexOfSubstring = msg.IndexOf("#"+client.channelName) +client.channelName.Length+2 ;
                     msg=msg.Substring(indexOfSubstring, msg.Length-indexOfSubstring);
                     List<string> numbers = Regex.Split(msg, @"\D+").ToList();
                     numbers.RemoveAll(x => x == string.Empty);
@@ -68,30 +67,29 @@ namespace TwitchBot
                         value = rnd.Next(0, 101);
                     }
 
-                    client.SendMessage(userName+ ", твой результат: "+value.ToString());
+                    client.SendMessage(userName+ ", ваш результат: "+value.ToString());
                 }
             },
             { "!flip",
                 delegate(string msg, TwitchIRCClient client)
                 {
-                    int indexOfSubstring = msg.IndexOf("!") ;
-                    string userName=msg.Substring(1, indexOfSubstring-1);
+                    client.SendCommand("PONG", ":tmi.twitch.tv");
+                    string userName=client.getUserName(msg);
                     Random rnd = new Random();
                     int value = rnd.Next(0, 2);
                     if (value == 0) {
-                        client.SendMessage(userName+", тебе выпадает Решка");
+                        client.SendMessage(userName+", вам выпадает Решка");
                     }
                     else
                     {
-                         client.SendMessage(userName+", тебе выпадает Орёл");
+                         client.SendMessage(userName+", вам выпадает Орёл");
                     }
                 }
             },
             { "!dino new",
                 delegate(string msg, TwitchIRCClient client)
                 {
-                    int indexOfSubstring = msg.IndexOf("!") ;
-                    string userName=msg.Substring(1, indexOfSubstring-1);
+                    string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
                     client.SendMessage(dinoWorld.createDino(userName, userName));
                 }
@@ -99,16 +97,52 @@ namespace TwitchBot
             { "!dino dinner",
                 delegate(string msg, TwitchIRCClient client)
                 {
-                    int indexOfSubstring = msg.IndexOf("!") ;
-                    string dinoName=msg.Substring(1, indexOfSubstring-1);
-                    Console.WriteLine(dinoName);
-                    client.SendMessage("Динозавр ушёл за фруктами");
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == dinoName);
-                    if (dino.Equals(null))
+                    string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName); //userName, а не dinoName, потому что 1 человек = 1 динозавр
+                    if (dino == null)
                     {
-                        client.SendMessage("Вам нужен свой личный динозавр! "+emotions.emotions["dinoStandart"]);
+                        client.SendMessage(userName+", вам нужен свой личный динозавр! "+emotions.emotions["dinoStandart"]);
+                        return;
                     }
-                    client.SendMessage(dino.dinner());
+                    client.SendMessage(userName+", ваш динозавр ушёл за фруктами");
+                    string answer = dino.dinner();
+                    client.SendMessage(answer);
+                }
+            },
+            { "!dino fruits",
+                delegate(string msg, TwitchIRCClient client)
+                {
+                    string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    if (dino is Herbivore)
+                    {
+                        var param = (Herbivore)dino;
+                        client.SendMessage(userName+", у вашего динозавра сейчас "+param.Fruits+" фруктов");
+                    }
+                    else
+                    {
+                        client.SendMessage(userName+", у вас не травоядный динозавр");
+                    }
+                }
+            },
+            { "!dino uplvl",
+                delegate(string msg, TwitchIRCClient client)
+                {
+                   string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    client.SendMessage(dino.lvlUp());
+                }
+            },
+            { "!dino lvl",
+                delegate(string msg, TwitchIRCClient client)
+                {
+                    string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    client.SendMessage(dino.getLevel());
                 }
             },
         };
@@ -143,7 +177,10 @@ namespace TwitchBot
             {
                 if (msg.Contains(pair.Key))
                 {
-                    pair.Value.Invoke(msg, this);
+                    Task.Run(() =>
+                    {
+                        pair.Value.Invoke(msg, this);
+                    });
                     return;
                 }
             }
@@ -161,9 +198,9 @@ namespace TwitchBot
                     {
                         textBox.Invoke((MethodInvoker)delegate { textBox.Text += message + '\n'; });
                         CheckCommand(message);
-                        if (message == "PING :tmi.twitch.tv")
+                        if (message == "PING :tmi.twitch.tv\r\n")
                         {
-                            SendCommand("PONG", ":tmi.twitch.tv");
+                            SendCommand("PONG", ":tmi.twitch.tv\r\n");
                             return;
                         }
                     }
@@ -174,7 +211,11 @@ namespace TwitchBot
                 return;
             }
         }
-
+        private string getUserName(string msg)
+        {
+            int indexOfSubstring = msg.IndexOf("!");
+            return msg.Substring(1, indexOfSubstring - 1);
+        }
         public void SendMessage(string message)
         {
             Console.WriteLine(message);

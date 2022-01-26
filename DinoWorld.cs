@@ -9,7 +9,7 @@ namespace TwitchBot
     internal class DinoWorld
     {
         private Emotion emotion;
-        public int maxDinos = 2;
+        public int maxDinos = 1;
         public Dictionary<string, int> dinosDict{ get; set; }
         public List<Dinozavr> dinozavrs { get; set; }
         public DinoWorld()
