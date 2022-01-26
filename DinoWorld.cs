@@ -45,6 +45,7 @@ namespace TwitchBot
             }
             return "Ошибка";
         }
+
         public string killDino(string dinoName)
         {
             var dinoToDelete = dinozavrs.Where(x => x.Name == dinoName).Select(x => x).First();

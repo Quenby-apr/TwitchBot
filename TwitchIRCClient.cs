@@ -99,16 +99,29 @@ namespace TwitchBot
                 {
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
+                    string answer = String.Empty;
                     var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName); //userName, а не dinoName, потому что 1 человек = 1 динозавр
                     if (dino == null)
                     {
                         client.SendMessage(userName+", вам нужен свой личный динозавр! "+emotions.emotions["dinoStandart"]);
                         return;
                     }
-                    if (!dino.Busy) {
-                        client.SendMessage(userName+", ваш динозавр ушёл за фруктами");
+                    if (dino is Herbivore)
+                    {
+                        if (!dino.Busy) 
+                        {
+                            client.SendMessage(userName+", ваш динозавр ушёл за фруктами");
+                        }
+                        answer = dino.dinner();
                     }
-                    string answer = dino.dinner();
+                    if (dino is Predator)
+                    {
+                        if (!dino.Busy)
+                        {
+                            client.SendMessage(userName+", ваш динозавр уже на охоте");
+                        }
+                        answer = dino.dinner(dinoWorld.dinozavrs);
+                    }
                     client.SendMessage(answer);
                 }
             },
@@ -121,11 +134,28 @@ namespace TwitchBot
                     if (dino is Herbivore)
                     {
                         var param = (Herbivore)dino;
-                        client.SendMessage(userName+", у вашего динозавра сейчас "+param.Fruits+" фруктов");
+                        client.SendMessage(userName+", за всё время ваш динозавр нашёл "+param.Fruits+" фруктов");
                     }
                     else
                     {
                         client.SendMessage(userName+", у вас не травоядный динозавр");
+                    }
+                }
+            },
+            { "!dino preys",
+                delegate(string msg, TwitchIRCClient client)
+                {
+                    string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    if (dino is Predator)
+                    {
+                        var param = (Predator)dino;
+                        client.SendMessage(userName+", за всё время ваш динозавр поймал "+param.Preys+" других динозавров");
+                    }
+                    else
+                    {
+                        client.SendMessage(userName+", у вас не хищный динозавр");
                     }
                 }
             },
@@ -145,6 +175,15 @@ namespace TwitchBot
                     Console.WriteLine(userName);
                     var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
                     client.SendMessage(dino.getLevel());
+                }
+            },
+            { "!dino hp",
+                delegate(string msg, TwitchIRCClient client)
+                {
+                    string userName=client.getUserName(msg);
+                    Console.WriteLine(userName);
+                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    client.SendMessage(dino.HP.ToString());
                 }
             },
         };
