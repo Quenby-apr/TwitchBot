@@ -20,18 +20,18 @@ namespace TwitchBot
         }
         public string createDino(string userName, string dinoName)
         {
-
             if (!dinosDict.ContainsKey(userName))
             {
-                dinosDict.Add(userName, 1);
                 Random rand = new Random();
                 int value = rand.Next(0, 4);
                 if (value<3)
                 {
+                    dinosDict.Add(userName, 1);
                     dinozavrs.Add(new Herbivore(userName,dinoName));
                     return userName + ", Ваш первый динозавр создан, и он травоядный! " + emotion.emotions["joy"]; // дино впервые от человека добавлен
                 } else if (value == 4)
                 {
+                    dinosDict.Add(userName, 1);
                     dinozavrs.Add(new Predator(userName, dinoName));
                     return userName + ", Ваш первый динозавр создан, и он хищный! " + emotion.emotions["predator"]; 
                 }
@@ -47,14 +47,15 @@ namespace TwitchBot
                     }
                     Random rand = new Random();
                     int value = rand.Next(0, 4);
-                    dinosDict[userName] = dinosDict[userName] + 1;
                     if (value < 3)
                     {
+                        dinosDict[userName] = dinosDict[userName] + 1;
                         dinozavrs.Add(new Herbivore(userName, dinoName));
                         return userName + ", Новый динозавр добавлен, и он травоядный " + emotion.emotions["joy"]; //дино добавлен   
                     }
                     else if (value == 3)
                     {
+                        dinosDict[userName] = dinosDict[userName] + 1;
                         dinozavrs.Add(new Predator(userName, dinoName));
                         return userName + ", Новый динозавр добавлен, и он хищный! " + emotion.emotions["predator"];
                     } 
@@ -77,9 +78,7 @@ namespace TwitchBot
             {
                 dinosDict[userName] = dinosDict[userName] - 1;
                 Console.WriteLine(dinosDict[userName] +"ключ удаления");
-                var dinoToDelete = dinozavrs.Where(x => x.Name == dinoName && x.userName == userName).FirstOrDefault();
-                dinoToDelete.Alive = false;
-                dinozavrs.Remove(dinoToDelete);
+                dinozavrs.RemoveAll(x => x.Name == dinoName && x.userName == userName);
                 return "Динозавра " + dinoName + " больше нет с нами";
             }
             else
