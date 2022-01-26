@@ -101,7 +101,7 @@ namespace TwitchBot
                     Busy = false;
                     if (HP<=MaxHP-10)
                     {
-                        HP += 10;
+                        HP += 10-1;
                     }
                     else
                     {
@@ -177,7 +177,7 @@ namespace TwitchBot
                     Preys++;
                     if (HP <= MaxHP - 5)
                     {
-                        HP += 5;
+                        HP += 5-1;
                     }
                     else
                     {
