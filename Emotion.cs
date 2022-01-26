@@ -15,7 +15,7 @@ namespace TwitchBot
             {
                 { "sadness", "BibleThump" },
                 { "joy", "VoHiYo" },
-                { "slightPain","PMSTwin"},
+                { "dropping","PMSTwin"}, //эмоционально поникший
                 { "dinoStandart", "ChefFrank "}
             };
         }

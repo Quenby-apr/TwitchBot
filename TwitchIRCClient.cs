@@ -105,7 +105,9 @@ namespace TwitchBot
                         client.SendMessage(userName+", вам нужен свой личный динозавр! "+emotions.emotions["dinoStandart"]);
                         return;
                     }
-                    client.SendMessage(userName+", ваш динозавр ушёл за фруктами");
+                    if (!dino.Busy) {
+                        client.SendMessage(userName+", ваш динозавр ушёл за фруктами");
+                    }
                     string answer = dino.dinner();
                     client.SendMessage(answer);
                 }

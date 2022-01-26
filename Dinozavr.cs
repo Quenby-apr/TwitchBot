@@ -50,6 +50,7 @@ namespace TwitchBot
         {
             if (!Busy)
             {
+                Busy = true;
                 Random rnd = new Random();
                 int value = rnd.Next(0, 10);
                 Thread.Sleep(10000);
@@ -59,16 +60,18 @@ namespace TwitchBot
                 if (value >= 8)
                 {
                     Fruits++;
+                    Busy = false;
                     return userName + ", ваш динозавр смог найти замечательный фрукт! А также " + xp + " опыта " + emotion.emotions["joy"];
                 }
                 else
                 {
-                    return userName + ", в этот раз фрукты найти не удалось, но мы смогли получить " + xp + " опыта " + emotion.emotions["slightPain"];
+                    Busy = false;
+                    return userName + ", в этот раз фрукты найти не удалось, но мы смогли получить " + xp + " опыта " + emotion.emotions["dropping"];
                 }
             }
             if (Busy)
             {
-                return userName + ", ваш динозавр ещё не вернулся, необходимо подождать";
+                return Name + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
             }
             return "что-то пошло не так";
         }
@@ -105,7 +108,7 @@ namespace TwitchBot
                     }
                     else
                     {
-                        return userName + ", к сожалению, вы ещё не можете поднять уровень своего динозавра " + emotion.emotions["slightPain"];
+                        return userName + ", к сожалению, вы ещё не можете поднять уровень своего динозавра " + emotion.emotions["dropping"];
                     }
                 }
             }
