@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TwitchBot
 {
-    public class Emotion
+    public static class Emotion
     {
-        public Dictionary<string, string> emotions;
-        public Emotion()
+        public static Dictionary<string, string> emotions;
+        static Emotion()
         {
             emotions = new Dictionary<string, string>
             {

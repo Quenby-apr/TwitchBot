@@ -18,7 +18,6 @@ namespace TwitchBot
     }
     class TwitchIRCClient
     {
-        private static Emotion emotions;
         private static DinoWorld dinoWorld;
         private TcpClient client;
         private StreamReader reader;
@@ -33,7 +32,6 @@ namespace TwitchBot
             { "!roll",
                 delegate(string msg, TwitchIRCClient client)
                 {
-                    int value;
                     string userName=client.getUserName(msg);
                     int indexOfSubstring = msg.IndexOf("#"+client.channelName) +client.channelName.Length+2 ;
                     msg=msg.Substring(indexOfSubstring, msg.Length-indexOfSubstring);
@@ -41,33 +39,28 @@ namespace TwitchBot
                     numbers.RemoveAll(x => x == string.Empty);
                     Console.WriteLine(msg);
                     Console.WriteLine(numbers.Count);
-                    for (int i =0; i<numbers.Count;i++)
-                    {
-                        Console.WriteLine(numbers[i]);
-                    }
-                   
+                    int value;
                     Random rnd = new Random();
-                    if (numbers.Count == 1)
-                    {
-                        
-                        value = rnd.Next(0, int.Parse(numbers[0])+1);
-                    }
-                    else if (numbers.Count == 2)
-                    {
-                        if (int.Parse(numbers[0])>int.Parse(numbers[1]))
+                    if (numbers.Count == 1 && int.TryParse(numbers[0], out value) && numbers[0]!="2147483647")
                         {
-                            string buf = numbers[1];
-                            numbers[1]=numbers[0];
-                            numbers[0]=buf;
+                            value = rnd.Next(0, int.Parse(numbers[0])+1);
                         }
-                        value = rnd.Next(int.Parse(numbers[0]), int.Parse(numbers[1])+1);
-                    }
+                        else if (numbers.Count == 2 && int.TryParse(numbers[0], out value) && int.TryParse(numbers[1], out value) && numbers[0]!="2147483647" && numbers[1]!="2147483647")
+                        {
+                            if (int.Parse(numbers[0])>int.Parse(numbers[1]))
+                            {
+                                string buf = numbers[1];
+                                numbers[1]=numbers[0];
+                                numbers[0]=buf;
+                            }
+                            value = rnd.Next(int.Parse(numbers[0]), int.Parse(numbers[1])+1);
+                        }
                     else
                     {
                         value = rnd.Next(0, 101);
                     }
 
-                    client.SendMessage(userName+ ", ваш результат: "+value.ToString());
+                    client.SendMessage(userName+ ", ваш результат: "+ value.ToString());
                 }
             },
             { "!flip",
@@ -100,10 +93,10 @@ namespace TwitchBot
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
                     string answer = String.Empty;
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName); //userName, а не dinoName, потому что 1 человек = 1 динозавр
+                    var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result; //userName, а не dinoName, потому что 1 человек = 1 динозавр
                     if (dino == null)
                     {
-                        client.SendMessage(userName+", вам нужен свой личный динозавр! "+emotions.emotions["dinoStandart"]);
+                        client.SendMessage(userName+", вам нужен свой личный динозавр! "+Emotion.emotions["dinoStandart"]);
                         return;
                     }
                     if (dino is Herbivore)
@@ -120,7 +113,7 @@ namespace TwitchBot
                         {
                             client.SendMessage(userName+", ваш динозавр ушёл на охоту");
                         }
-                        answer = dino.dinner(dinoWorld.dinozavrs);
+                        answer = dino.dinner(dinoWorld.GetPrey(dino.Name).Result);
                     }
                     client.SendMessage(answer);
                 }
@@ -130,7 +123,7 @@ namespace TwitchBot
                 {
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     if (dino is Herbivore)
                     {
                         var param = (Herbivore)dino;
@@ -147,7 +140,7 @@ namespace TwitchBot
                 {
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     if (dino is Predator)
                     {
                         var param = (Predator)dino;
@@ -164,7 +157,7 @@ namespace TwitchBot
                 {
                    string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     client.SendMessage(dino.lvlUp());
                 }
             },
@@ -173,7 +166,7 @@ namespace TwitchBot
                 {
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     client.SendMessage(dino.getLevel());
                 }
             },
@@ -182,7 +175,7 @@ namespace TwitchBot
                 {
                     string userName=client.getUserName(msg);
                     Console.WriteLine(userName);
-                    var dino = dinoWorld.dinozavrs.FirstOrDefault(x => x.Name == userName);
+                    var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     client.SendMessage(userName+ ", у вашего динозавра сейчас "+dino.HP.ToString()+" здоровья");
                 }
             },
@@ -197,7 +190,6 @@ namespace TwitchBot
         };
         public TwitchIRCClient(TextBox outputTextBox, string channelName, string botName, string token)
         {
-            emotions = new Emotion();
             dinoWorld = new DinoWorld();
             commands = new List<string>();
             textBox = outputTextBox;

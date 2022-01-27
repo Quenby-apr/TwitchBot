@@ -1,4 +1,8 @@
-﻿using System;
+﻿using FireSharp;
+using FireSharp.Config;
+using FireSharp.Interfaces;
+using FireSharp.Response;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,33 +13,30 @@ namespace TwitchBot
 {
     public abstract class Dinozavr
     {
-        public Emotion emotion;
-        public string userName { get; set; }
+        public string UserName { get; set; }
         public string Name { get; set; }
-        public int XP { get; protected set; } //опыт
-        public bool Alive { get; set; } //НАДО ИЗМЕНИТЬ НА УДАЛЕНИЕ ИЗ БД
-        public int[] levels = new int[]
-        {
-            5,20,40,65,90,130,170,215,260,340,500,720,960,1200,1470,1800,2230,2700
-        };
-        public int Level { get; protected set; }
-        public int HP { get; set; } //очки здоровья
-        public int Wins { get; set; }
-        public bool Busy { get; set; }
+        public int XP { get; set; } //опыт
 
+        public readonly static int[] levels = new int[]
+        {
+            5,20,40,65,90,130,170,215,260,340,500,720,960,1200,1470,1800,2230,2700,3250,3900,4700,6200,8700,12000,16500,23700,29500,35000,42000,50000,60000,70000,80000,90000,100000,120000,140000,160000,180000,200000
+        };
+        public int Level { get; set; }
+        public int HP { get; set; } //очки здоровья
+        public bool Busy { get; set; }
+        public int MaxHP { get; set; }
+        public Dinozavr() { }
         public Dinozavr(string userName, string name)
         {
             XP = 1;
             Level = 0;
             HP = 10;
-            Wins = 0;
-            this.userName = userName;
+            UserName = userName;
             Name = name;
             Busy = false;
-            emotion = new Emotion();
         }
         public abstract string dinner();
-        public abstract string dinner(List<Dinozavr> dinozavrs);
+        public abstract string dinner(Dinozavr prey);
         public  string getLevel()
         {
             for (int i = 0; i < levels.Count(); i++)
@@ -44,11 +45,11 @@ namespace TwitchBot
                 {
                     if (i > Level)
                     {
-                        return userName + ", у вашего динозавра сейчас " + Level + " уровень и заработано " + XP + " опыта, вы уже можете поднять свой уровень!";
+                        return UserName + ", у вашего динозавра сейчас " + Level + " уровень и заработано " + XP + " опыта, вы уже можете поднять свой уровень!";
                     }
                     else
                     {
-                        return userName + ", у вашего динозавра сейчас " + Level + " уровень и заработано " + XP + " опыта, до следующего уровня не хватает " + (levels[i] - XP) + " опыта";
+                        return UserName + ", у вашего динозавра сейчас " + Level + " уровень и заработано " + XP + " опыта, до следующего уровня не хватает " + (levels[i] - XP) + " опыта";
                     }
                 }
             }
@@ -63,24 +64,56 @@ namespace TwitchBot
                     if (i > Level)
                     {
                         Level++;
-                        return userName + ", поздравляю, ваш динозавр стал " + Level + " уровня " + emotion.emotions["joy"];
+                        UpdateDinoInDB(this);
+                        return UserName + ", поздравляю, ваш динозавр стал " + Level + " уровня " + Emotion.emotions["joy"];
                     }
                     else
                     {
-                        return userName + ", к сожалению, вы ещё не можете поднять уровень своего динозавра " + emotion.emotions["dropping"];
+                        return UserName + ", к сожалению, вы ещё не можете поднять уровень своего динозавра " + Emotion.emotions["dropping"];
                     }
                 }
             }
             return "Ошибка логики поднятия уровня";
         }
+        protected async void DeleteDinoFromDB(string dinoName)
+        {
+            IFirebaseConfig config = new FirebaseConfig
+            {
+                AuthSecret = "QEko1K97XZMZtzKKhc77Eh8EmAXwGEUSxtpie53H",
+                BasePath = "https://dinoworld-474aa-default-rtdb.europe-west1.firebasedatabase.app/"
+            };
+            IFirebaseClient client = new FirebaseClient(config);
+            FirebaseResponse response = await client.DeleteAsync("Dinozavrs/" + dinoName);
+        }
+        protected async void UpdateDinoInDB(Dinozavr dino)
+        {
+            IFirebaseConfig config = new FirebaseConfig
+            {
+                AuthSecret = "QEko1K97XZMZtzKKhc77Eh8EmAXwGEUSxtpie53H",
+                BasePath = "https://dinoworld-474aa-default-rtdb.europe-west1.firebasedatabase.app/"
+            };
+            IFirebaseClient client = new FirebaseClient(config);
+            FirebaseResponse response = await client.UpdateAsync("Dinozavrs/" + dino.Name, dino);
+        }
+        protected async Task<Dinozavr> GetDinoFromBD(string dinoName)
+        {
+            IFirebaseConfig config = new FirebaseConfig
+            {
+                AuthSecret = "QEko1K97XZMZtzKKhc77Eh8EmAXwGEUSxtpie53H",
+                BasePath = "https://dinoworld-474aa-default-rtdb.europe-west1.firebasedatabase.app/"
+            };
+            IFirebaseClient client = new FirebaseClient(config);
+            FirebaseResponse response = await client.GetAsync("Dinozavrs/" + dinoName);
+            return response.ResultAs<Dinozavr>();
+        }
     }
-
     public class Herbivore: Dinozavr
     {
-        public int MaxHP = 300;
-        public int Fruits { get; private set; }
-        public Herbivore(string userName, string name) :base(userName,name)
+        public int Fruits { get; set; }
+        public Herbivore() { }
+        public Herbivore(string userName, string name) : base(userName, name)
         {
+            MaxHP = 300;
             Fruits = 0;
         }
 
@@ -89,9 +122,10 @@ namespace TwitchBot
             if (!Busy)
             {
                 Busy = true;
+                UpdateDinoInDB(this);
                 Random rnd = new Random();
                 int value = rnd.Next(0, 10);
-                Thread.Sleep(10000);
+                Thread.Sleep(5000);
                 Random rnd2 = new Random();
                 int xp = rnd2.Next(4, 10);
                 XP += xp;
@@ -107,71 +141,59 @@ namespace TwitchBot
                     {
                         HP = MaxHP;
                     }
-                    return userName + ", ваш динозавр смог найти замечательный фрукт, поэтому восполнил себе здоровье! А также получил " + xp + " опыта " + emotion.emotions["joy"];
+                    UpdateDinoInDB(this);
+                    return UserName + ", ваш динозавр смог найти замечательный фрукт, поэтому восполнил себе здоровье! А также получил " + xp + " опыта " + Emotion.emotions["joy"];
                 }
                 else
                 {
                     Busy = false;
                     HP--;
+                    UpdateDinoInDB(this);
                     if (HP<=0)
                     {
-                        Alive = false;
-                        return "Динозавра " + Name + "больше нет с нами " +emotion.emotions["sadness"];
+                        DeleteDinoFromDB(Name);
+                        return "Динозавра " + Name + "больше нет с нами " + Emotion.emotions["sadness"];
                     }
-                    return userName + ", в этот раз фрукты найти не удалось, но мы смогли получить " + xp + " опыта " + emotion.emotions["dropping"];
+                    return UserName + ", в этот раз фрукты найти не удалось, но мы смогли получить " + xp + " опыта " + Emotion.emotions["dropping"];
 
                 }
             }
             if (Busy)
             {
-                return userName + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
+                return UserName + ", ваш динозавр ещё не вернулся, необходимо подождать"; 
             }
             return "что-то пошло не так";
         }
 
-        public override string dinner(List<Dinozavr> dinozavrs)
+        public override string dinner(Dinozavr prey)
         {
             throw new NotImplementedException();
         }
     }
-
     public class Predator: Dinozavr
     {
-        public int MaxHP = 15;
-        public int Preys { get; private set; }
+        public int Preys { get; set; }
+        public Predator() { }
         public Predator(string userName, string name) : base(userName, name)
         {
+            MaxHP = 15;
             Preys = 0;
         }
 
-        public override string dinner(List<Dinozavr> dinozavrs)
+        public override string dinner(Dinozavr prey)
         {
             if (!Busy)
             {
                 Busy = true;
+                UpdateDinoInDB(this);
                 Random rnd = new Random();
-                int preyId = rnd.Next(0, dinozavrs.Count());
-                var prey = dinozavrs[preyId];
-                if (prey.Name == Name)
-                {
-                    if (preyId != dinozavrs.Count() - 1)
-                    {
-                        prey = dinozavrs[preyId + 1];
-                    }
-                    else if (preyId != 0)
-                    {
-                        prey = dinozavrs[preyId - 1];
-                    }
-                    else
-                    {
-                        return userName+" , в нашем мире вы единственный динозавр " + emotion.emotions["sadness"];
-                    }
-                }
                 int huntValue = rnd.Next(0, 70) + Level;
                 int preyValue = rnd.Next(0, 90) + prey.Level;
+                Thread.Sleep(5000);
                 Random rnd2 = new Random();
                 int xp = rnd2.Next(14, 28);
                 XP += xp;
+                UpdateDinoInDB(this);
                 if (huntValue >= preyValue)
                 {
                     Preys++;
@@ -184,27 +206,34 @@ namespace TwitchBot
                         HP += MaxHP;
                     }
                     prey.HP -= 5;
+                    Busy = false;
+                    UpdateDinoInDB(this);
+                    UpdateDinoInDB(prey);
                     if (prey.HP < 0)
                     {
-                        prey.Alive = false;
-                        return "Динозавра " + prey.Name + "больше нет с нами " + emotion.emotions["sadness"];
+                        DeleteDinoFromDB(prey.Name);
+                        return "Динозавра " + prey.Name + "больше нет с нами " + Emotion.emotions["sadness"];
                     }
-                    return userName + ", ваш динозавр смог съесть динозавра " + prey.Name + "! Но он восполнил себе немножко здоровья и получил "+XP+" опыта " + emotion.emotions["predator"];
+                    return UserName + ", ваш динозавр смог съесть динозавра " + prey.Name + "! Он восполнил себе немножко здоровья и получил "+xp+" опыта " + Emotion.emotions["predator"];
                 }
                 else
                 {
                     HP--;
+                    Busy = false;
+                    UpdateDinoInDB(this);
                     if (HP < 0)
                     {
-                        Alive = false;
-                        return "Динозавра " + Name + "больше нет с нами " + emotion.emotions["sadness"];
+                        DeleteDinoFromDB(Name);
+                        return "Динозавра " + Name + "больше нет с нами " + Emotion.emotions["sadness"];
                     }
-                    return userName + ", ваш динозавр не смог поймать динозавра " + prey.Name + "! Но получил "+XP+" опыта " + emotion.emotions["dropping"];
+                    Busy = false;
+                    UpdateDinoInDB(this);
+                    return UserName + ", ваш динозавр не смог поймать динозавра " + prey.Name + "! Но получил "+xp+" опыта " + Emotion.emotions["dropping"];
                 }
             }
             if (Busy)
             {
-                return userName + ", ваш динозавр ещё не вернулся, необходимо подождать"; //dinoName почему-то не работает, хоть и инициализирован
+                return UserName + ", ваш динозавр ещё не вернулся, необходимо подождать"; 
             }
             return "что-то пошло не так";
         }
@@ -213,5 +242,6 @@ namespace TwitchBot
         {
             throw new NotImplementedException();
         }
+        
     }
 }
