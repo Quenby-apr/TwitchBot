@@ -37,8 +37,6 @@ namespace TwitchBot
                     msg=msg.Substring(indexOfSubstring, msg.Length-indexOfSubstring);
                     List<string> numbers = Regex.Split(msg, @"\D+").ToList();
                     numbers.RemoveAll(x => x == string.Empty);
-                    Console.WriteLine(msg);
-                    Console.WriteLine(numbers.Count);
                     int value;
                     Random rnd = new Random();
                     if (numbers.Count == 1 && int.TryParse(numbers[0], out value) && numbers[0]!="2147483647")
@@ -83,7 +81,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     client.SendMessage(dinoWorld.createDino(userName, userName));
                 }
             },
@@ -91,7 +88,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     string answer = String.Empty;
                     var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result; //userName, а не dinoName, потому что 1 человек = 1 динозавр
                     if (dino == null)
@@ -122,7 +118,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     if (dino is Herbivore)
                     {
@@ -139,7 +134,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     if (dino is Predator)
                     {
@@ -156,7 +150,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                    string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     client.SendMessage(dino.lvlUp());
                 }
@@ -165,7 +158,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     client.SendMessage(dino.getLevel());
                 }
@@ -174,7 +166,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     var dino = dinoWorld.GetDinoFromBDByDinoName(userName).Result;
                     client.SendMessage(userName+ ", у вашего динозавра сейчас "+dino.HP.ToString()+" здоровья");
                 }
@@ -183,7 +174,6 @@ namespace TwitchBot
                 delegate(string msg, TwitchIRCClient client)
                 {
                     string userName=client.getUserName(msg);
-                    Console.WriteLine(userName);
                     client.SendMessage(dinoWorld.killDino(userName, userName));
                 }
             },
@@ -199,10 +189,6 @@ namespace TwitchBot
             this.botName = botName;
             this.channelName = channelName;
             passToken = token;
-            if (passToken == String.Empty)
-            {
-                Console.WriteLine("Токен пуст");
-            }
         }
         public void Connect()
         {
@@ -259,7 +245,6 @@ namespace TwitchBot
         }
         public void SendMessage(string message)
         {
-            Console.WriteLine(message);
             commands.Add("PRIVMSG "+ string.Format("#{0} :{1}", channelName, message.ToString()));
             SendCommands();
         }

@@ -125,7 +125,7 @@ namespace TwitchBot
                 UpdateDinoInDB(this);
                 Random rnd = new Random();
                 int value = rnd.Next(0, 10);
-                Thread.Sleep(5000);
+                Thread.Sleep(1200000);
                 Random rnd2 = new Random();
                 int xp = rnd2.Next(4, 10);
                 XP += xp;
@@ -189,7 +189,7 @@ namespace TwitchBot
                 Random rnd = new Random();
                 int huntValue = rnd.Next(0, 70) + Level;
                 int preyValue = rnd.Next(0, 90) + prey.Level;
-                Thread.Sleep(5000);
+                Thread.Sleep(1800000);
                 Random rnd2 = new Random();
                 int xp = rnd2.Next(14, 28);
                 XP += xp;
